@@ -37,3 +37,22 @@ Integracija ESP32 mikrokontrolera sa IR LED predajnikom radi slanja tačnih IR k
 - Omogućavanje osnovne kontrole pomoću fizičkih tastera povezanih na ESP32 (ON/OFF, promene kanala, regulacija jačine zvuka i temperature).
 
 - Modularan dizajn sistema kako bi se lako dodavali novi proizvođači i komande.
+
+---
+
+#### 3. Arhitektura sistema
+Sistem se sastoji iz tri glavne komponente:
+
+- Mobilna aplikacija – omogućava korisniku da preko jednostavnog interfejsa izabere uređaj (TV/klima), proizvođača i željenu komandu.
+
+- ESP32 mikrokontroler – služi kao posrednik, prima komande preko Bluetooth veze, emituje odgovarajući IR signal ka uređaju i šalju potvrdu o izvšrenoj radnji.
+
+- Kućni uređaj (TV/klima) – prima IR signal kao da dolazi sa originalnog daljinskog upravljača.
+
+#### Dijagram arhitekture
++---------------------+        Bluetooth       +--------------------+        IR signal       +--------------------+
+|  Mobilna aplikacija | <--------------------> |       ESP32        | ---------------------> |  TV / Klima uređaj |
+| - Izbor uređaja     |                        | - Parsiranje       |                        | - Prima komande    |
+| - Izbor komande     |                        | - IR emiter modul  |                        |   (ON/OFF, temp.)  | 
++---------------------+                        +-------------------+                         +--------------------+
+
