@@ -78,7 +78,7 @@ Firmware implementira sledeće funkcionalnosti:
 
 - Bluetooth server:
 
-  - ESP32 prima komande od mobilne aplikacije koristeći Bluetooth SPP (Serial Port Profile).
+  - ESP32 prima komande od mobilne aplikacije koristeći Bluetooth SPP (Serial Port Profile) ili BLE (Bluetooth Low Energy).
 
   - Svaka primljena komanda se parsira i obrađuje.
 
@@ -99,3 +99,31 @@ Firmware implementira sledeće funkcionalnosti:
 - Tasteri na ESP32:
   
   - Povezani tasteri omogućavaju osnovne funkcije nezavisno od aplikacije (ON/OFF, Volume +/-, Temperature +/-, CH +/-).
+
+#### 5.2 Android aplikacija
+
+Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Njene funkcionalnosti uključuju:
+
+- Povezivanje sa ESP32:
+
+  - Uspostavlja Bluetooth vezu sa odabranim ESP32 uređajem.
+
+  - Prikazuje status veze i omogućava ponovno uparivanje ako je potrebno.
+
+- Izbor uređaja i proizvođača:
+
+  - Korisnik bira tip uređaja (TV ili klima) i proizvođača iz padajuće liste.
+
+  - Omogućava lak pristup komandi specifičnim za taj uređaj.
+
+- Meni komandi:
+
+  -Prikazuje dugmad za osnovne funkcije (Power, Volume, Channel, Temperature).
+
+  - Prilikom pritiska dugmeta, šalje odgovarajuću komandu ESP32-u u definisanom formatu (npr. AC_LG_TEMP+).
+
+- Alat za izradu:
+
+  - Projekat je razvijen korišćenjem MIT App Inventor za brzu izradu prototipa.
+
+  - Alternativno, može se koristiti Android Studio za profesionalniji GUI i dodatne funkcionalnosti.
