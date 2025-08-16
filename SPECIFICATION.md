@@ -50,9 +50,10 @@ Sistem se sastoji iz tri glavne komponente:
 - Kućni uređaj (TV/klima) – prima IR signal kao da dolazi sa originalnog daljinskog upravljača.
 
 #### Dijagram arhitekture
+```
 +---------------------+        Bluetooth       +--------------------+        IR signal       +--------------------+
 |  Mobilna aplikacija | <--------------------> |       ESP32        | ---------------------> |  TV / Klima uređaj |
 | - Izbor uređaja     |                        | - Parsiranje       |                        | - Prima komande    |
 | - Izbor komande     |                        | - IR emiter modul  |                        |   (ON/OFF, temp.)  | 
 +---------------------+                        +-------------------+                         +--------------------+
-
+```
