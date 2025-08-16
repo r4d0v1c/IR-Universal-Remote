@@ -118,12 +118,12 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 
 - Meni komandi:
 
-  -Prikazuje dugmad za osnovne funkcije (Power, Volume, Channel, Temperature).
+  - Prikazuje dugmad za osnovne funkcije (Power, Volume, Channel, Temperature).
 
   - Prilikom pritiska dugmeta, šalje odgovarajuću komandu ESP32-u u definisanom formatu (npr. AC_LG_TEMP+).
 
 - Alat za izradu:
 
-  - Projekat je razvijen korišćenjem MIT App Inventor za brzu izradu prototipa.
+  - Projekat razvijati korišćenjem MIT App Inventor za brzu izradu prototipa.
 
   - Alternativno, može se koristiti Android Studio za profesionalniji GUI i dodatne funkcionalnosti.
