@@ -134,7 +134,7 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 ### Komunikacioni protokol
 
 - Poruke su tekstualnog formata (UTF-8), sa jasno definisanim delimiterima.
-- Svaka poruka je jednolinijska i završava \n (newline).
+- Svaka poruka počinje i završava se sa #
 
 #### Format komande (App -> ESP32)
 ```
