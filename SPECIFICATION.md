@@ -40,7 +40,7 @@ Integracija ESP32 mikrokontrolera sa IR LED predajnikom radi slanja tačnih IR k
 
 ---
 
-#### 3. Arhitektura sistema
+### 3. Arhitektura sistema
 Sistem se sastoji iz tri glavne komponente:
 
 - Mobilna aplikacija – omogućava korisniku da preko jednostavnog interfejsa izabere uređaj (TV/klima), proizvođača i željenu komandu.
