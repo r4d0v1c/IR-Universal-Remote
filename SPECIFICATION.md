@@ -57,3 +57,45 @@ Sistem se sastoji iz tri glavne komponente:
 | - Izbor komande     |                        | - IR emiter modul  |                        |   (ON/OFF, temp.)  | 
 +---------------------+                        +-------------------+                         +--------------------+
 ```
+
+---
+
+### 4. Hardverska specifikiacija
+- Naknadno
+
+
+---
+
+### 5. Softverska specifikacija
+#### 5.1 ESP32 Firmware
+
+ESP32 mikrokontroler služi kao posrednik između mobilne aplikacije i IR uređaja. 
+Firmware implementira sledeće funkcionalnosti:
+
+- Korišćena biblioteka:
+
+-- IRremoteESP8266 – omogućava generisanje i slanje IR kodova prema TV i klima uređajima različitih proizvođača.
+
+- Bluetooth server:
+
+-- ESP32 prima komande od mobilne aplikacije koristeći Bluetooth SPP (Serial Port Profile).
+
+-- Svaka primljena komanda se parsira i obrađuje.
+
+- Mapiranje komandi:
+
+-- String komande sa aplikacije (npr. TV_SAMSUNG_VOL+) se mapira na odgovarajući IR kod iz interne baze podataka.
+
+-- Omogućava jednostavno dodavanje novih proizvođača i funkcija.
+
+- Slanje IR signala:
+
+-- ESP32 emituje IR signal putem IR LED diode
+
+-- Signal odgovara originalnim daljinskim komandama ciljanog uređaja.
+
+-- Salje ACK (potvrdu prijema) mobilnoj aplikaciji o izvršenoj radnji.
+
+- Tasteri na ESP32:
+  
+-- Povezani tasteri omogućavaju osnovne funkcije nezavisno od aplikacije (ON/OFF, Volume +/-, Temperature +/-, CH +/-).
