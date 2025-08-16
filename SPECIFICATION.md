@@ -127,3 +127,45 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
   - Projekat razvijati korišćenjem MIT App Inventor za brzu izradu prototipa.
 
   - Alternativno, može se koristiti Android Studio za profesionalniji GUI i dodatne funkcionalnosti.
+ 
+
+---
+
+### Komunikacioni protokol
+
+- Poruke su tekstualnog formata (UTF-8), sa jasno definisanim delimiterima.
+- Svaka poruka je jednolinijska i završava \n (newline).
+
+#### Format komande (App -> ESP32)
+```
+#<DEVICE>|<BRAND>|<MODEL>|<COMMAND>#
+```
+Polja:
+- DEVICE  - tip uređaja [TV, AC]
+- BRAND   - proizvođač (SAMSUNG, LG,...)
+- MODEL   - opciono, ako ima više modela (M1234 ili GENEREIC ako nije potrebno)
+- COMMAND - akcija [ON, OFF, VOL+, VOL-, CH+, CH-, TEMP-, TEMP+]
+
+Primeri:
+- #TV|SAMSUNG|GENERIC|VOL+#
+- #AC|DAIKIN|M300|TEMP-#
+
+#### Format komande (ESP32 -> App)
+```
+#<STATUS>|<INFO>#
+```
+- STATUS - [OK, ERR, ACK]
+- INFO   - dodatne informacije (razlog greške ili potvrda komande)
+
+Primeri:
+- #ACK|TV|VOL+# - ESP32 primio poruku
+- #OK|TV|VOL+#  - ESP32 izvršio komandu
+- #ERR|CODE_ERROR#
+  - 101 - INVALID_FORMAT
+  - 102 - UKNOWN_DEVICE
+  - 103 - UNKNOWN_BRAND
+  - 104 - UNKNOWN_COMMAND
+  - 105 - MISSING_PARAMETER
+  - 106 - EXECUTION_FAILED
+  - 107 - TIMEOUT
+  - 108 - NOT_SUPPORTED
