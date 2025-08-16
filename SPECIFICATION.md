@@ -178,7 +178,7 @@ Primeri:
 
 Baza je organizovana hijerarhijski:
 ```
-Proizvočač - Uređaj - Komanda - IR kod
+Proizvođač -> Uređaj -> Komanda -> IR kod
 ```
 - Proizvođač (SAMSUNG, LG, Sony,...)
 - Uređaj (TV, AC)
@@ -192,7 +192,7 @@ Pošto baza ne mora biti ogromna, najlakše je da bude ugrađena u firmware ESP3
 #### Pristup bazi
 
 - Kada ESP32 primi poruku od aplikacije on:
-1. Parsira poruku - izdvoji uređaj, proizvođača i komandu
-2. Pogleda da li postoji u bazi
-3. Ako postoji - šalje IR kod
-4. Ako ne postoji - vraća grešku u skladu sa protokolom
+  1. Parsira poruku - izdvoji uređaj, proizvođača i komandu
+  2. Pogleda da li postoji u bazi
+  3. Ako postoji - šalje IR kod
+  4. Ako ne postoji - vraća grešku u skladu sa protokolom
