@@ -20,7 +20,7 @@ Glavni cilj ovog projekta je razvoj univerzalnog daljinskog sistema koji će omo
 
 #### Primarni ciljevi
 
-- Implementacija mobilne aplikacije koja omogućava:
+Implementacija mobilne aplikacije koja omogućava:
 
 - povezivanje sa ESP32 putem Bluetooth-a,
 
@@ -28,7 +28,7 @@ Glavni cilj ovog projekta je razvoj univerzalnog daljinskog sistema koji će omo
 
 - izbor proizvođača i odgovarajućih komandi.
 
--Integracija ESP32 mikrokontrolera sa IR LED predajnikom radi slanja tačnih IR komandi uređajima.
+Integracija ESP32 mikrokontrolera sa IR LED predajnikom radi slanja tačnih IR komandi uređajima.
 
 - Upotreba postojeće IR biblioteke (npr. IRremoteESP8266) za rad sa bazom komandi različitih proizvođača.
 
