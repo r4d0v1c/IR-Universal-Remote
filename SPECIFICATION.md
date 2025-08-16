@@ -131,7 +131,7 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 
 ---
 
-### 7. Komunikacioni protokol
+### 6. Komunikacioni protokol
 
 - Poruke su tekstualnog formata (UTF-8), sa jasno definisanim delimiterima.
 - Svaka poruka počinje i završava se sa #
@@ -172,7 +172,7 @@ Primeri:
  
 ---
 
-### 8. Baza IR komandi
+### 7. Baza IR komandi
 
 #### Organizacija podataka
 
