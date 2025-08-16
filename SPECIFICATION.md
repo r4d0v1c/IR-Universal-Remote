@@ -131,7 +131,7 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 
 ---
 
-### Komunikacioni protokol
+### 7. Komunikacioni protokol
 
 - Poruke su tekstualnog formata (UTF-8), sa jasno definisanim delimiterima.
 - Svaka poruka počinje i završava se sa #
@@ -169,3 +169,30 @@ Primeri:
   - 106 - EXECUTION_FAILED
   - 107 - TIMEOUT
   - 108 - NOT_SUPPORTED
+ 
+---
+
+### 8. Baza IR komandi
+
+#### Organizacija podataka
+
+Baza je organizovana hijerarhijski:
+```
+Proizvočač - Uređaj - Komanda - IR kod
+```
+- Proizvođač (SAMSUNG, LG, Sony,...)
+- Uređaj (TV, AC)
+- Komanda (VOL+, VOL-,...)
+- IR kod - hex string ili binarni kod koji ESP32 šalje IR predajnikom
+
+#### Način čuvanja
+
+Pošto baza ne mora biti ogromna, najlakše je da bude ugrađena u firmware ESP32 (kao tabela ili JSON fajl u SPIFFS/LittleFS)
+
+#### Pristup bazi
+
+- Kada ESP32 primi poruku od aplikacije on:
+1. Parsira poruku - izdvoji uređaj, proizvođača i komandu
+2. Pogleda da li postoji u bazi
+3. Ako postoji - šalje IR kod
+4. Ako ne postoji - vraća grešku u skladu sa protokolom
