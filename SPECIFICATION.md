@@ -143,7 +143,7 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 Polja:
 - DEVICE  - tip uređaja [TV, AC]
 - BRAND   - proizvođač (SAMSUNG, LG,...)
-- MODEL   - opciono, ako ima više modela (M1234 ili GENEREIC ako nije potrebno)
+- MODEL   - opciono, ako ima više modela (M1234 ili GENERIC ako nije potrebno)
 - COMMAND - akcija [ON, OFF, VOL+, VOL-, CH+, CH-, TEMP-, TEMP+]
 
 Primeri:
