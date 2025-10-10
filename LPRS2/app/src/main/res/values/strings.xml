@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Universal-AC-TV-Remote</string>
+    <string name="esp23_ac_amp_tv_remote"><![CDATA[ESP23 AC&TV Remote]]></string>
+    <string name="connect">Connect</string>
+    <string name="not_connected">Not connected</string>
+    <string name="_1_open_settings_bluetooth_on_your_phone"><![CDATA[1. Open Settings -> Bluetooth on your phone.]]></string>
+    <string name="_2_search_for_available_devices_and_select_esp32">2. Search for available devices and select ESP32.</string>
+    <string name="_3_when_prompted_confirm_the_pairing_request">3. When prompted, confirm the pairing request.</string>
+    <string name="_4_once_paried_return_to_this_app_and_connect_to_the_esp32">4. Once paired, return to this app and connect to the ESP32.</string>
+    <string name="esp32_ac_amp_tv_nremote"><![CDATA[ESP32 AC&TV\nRemote]]></string>
 </resources>
