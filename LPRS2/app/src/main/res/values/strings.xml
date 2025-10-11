@@ -8,4 +8,6 @@
     <string name="_3_when_prompted_confirm_the_pairing_request">3. When prompted, confirm the pairing request.</string>
     <string name="_4_once_paried_return_to_this_app_and_connect_to_the_esp32">4. Once paired, return to this app and connect to the ESP32.</string>
     <string name="esp32_ac_amp_tv_nremote"><![CDATA[ESP32 AC&TV\nRemote]]></string>
+    <string name="esp32_is_not_paired">ESP32 is not paired</string>
+    <string name="connected">Connected</string>
 </resources>

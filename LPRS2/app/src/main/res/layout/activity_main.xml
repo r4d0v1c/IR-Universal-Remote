@@ -73,6 +73,7 @@
         android:layout_height="wrap_content"
         android:text="@string/not_connected"
         android:textColor="@color/red"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/instructions_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
