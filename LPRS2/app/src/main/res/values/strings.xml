@@ -10,4 +10,5 @@
     <string name="esp32_ac_amp_tv_nremote"><![CDATA[ESP32 AC&TV\nRemote]]></string>
     <string name="esp32_is_not_paired">ESP32 is not paired</string>
     <string name="connected">Connected</string>
+    <string name="this_device_does_not_have_bluetooth">This device does not have Bluetooth!</string>
 </resources>
