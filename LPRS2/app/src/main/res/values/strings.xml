@@ -11,4 +11,15 @@
     <string name="esp32_is_not_paired">ESP32 is not paired</string>
     <string name="connected">Connected</string>
     <string name="this_device_does_not_have_bluetooth">This device does not have Bluetooth!</string>
+    <string name="to_switch_from_ac_to_tv_and_vice_versa_unclick_currently_selected_device">To switch from AC to TV and vice versa,\nunclick currently selected device</string>
+    <string name="on">ON</string>
+    <string name="off">OFF</string>
+    <string name="ch">CH+</string>
+    <string name="ch_minus">CH-</string>
+    <string name="temp">TEMP+</string>
+    <string name="temp_minus">TEMP-</string>
+    <string name="vol">VOL+</string>
+    <string name="_minus">VOL-</string>
+    <string name="ac">AC</string>
+    <string name="tv">TV</string>
 </resources>
