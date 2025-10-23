@@ -1,6 +1,7 @@
 package com.example.universal_ac_tv_remote.ui;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +14,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.universal_ac_tv_remote.R;
+import com.example.universal_ac_tv_remote.utils.Constants;
+
+import java.util.Arrays;
 
 
 public class ControlActivity extends AppCompatActivity implements View.OnClickListener {
@@ -30,18 +34,13 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     Button volPlusButton;
     Button volMinusButton;
 
+    String [] tvBrands = {"SAMSUNG", "LG", "FOX"};
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         finish();
     }
 
-    /**
-     * Kreira i inicijalizuje ControlActivity.
-     * Poziva se kada se aktivnost prvi put pokreće.
-     * 
-     * @param savedInstanceState Sačuvano stanje aktivnosti (null ako se prvi put pokreće)
-     */
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,20 +74,51 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         volMinusButton.setOnClickListener(this);
         disableButtons();
     }
-
-
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if(id == R.id.tv) {
-            disableAcButtons();
-            enableTvButtons();
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(ControlActivity.this);
+            builder.setTitle("Choose available TV brand")
+                    .setItems(tvBrands, (dialog, which) -> {
+                        String chosen = tvBrands[which];
+
+                        // Postavi izabrani TV brend u TextView
+                        deviceText.setText(chosen);
+                        disableAcButtons();
+                        enableTvButtons();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> {})
+                    .setCancelable(false)
+                    .show();
         } else if(id == R.id.ac) {
-            disableTvButtons();
-            enableAcButtons();
+            // Kreiraj listu enum naziva za prikaz u dialogu
+            String[] acDeviceNames = Arrays.stream(Constants.DecodeType.values())
+                    .filter(type -> type != Constants.DecodeType.UNKNOWN && type != Constants.DecodeType.UNUSED)
+                    .map(Enum::name)
+                    .toArray(String[]::new);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(ControlActivity.this);
+            builder.setTitle("Choose available AC device")
+                    .setItems(acDeviceNames, (dialog, which) -> {
+                        String chosen = acDeviceNames[which];
+
+                        // Pronađi odgovarajući enum i uzmi njegovu int vrednost
+                        Constants.DecodeType selectedType = Constants.DecodeType.valueOf(chosen);
+
+                        // Postavi int vrednost u TextView
+                        deviceText.setText(chosen);
+                        disableTvButtons();
+                        enableAcButtons();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> {})
+                    .setCancelable(false)
+                    .show();
         }
     }
 
+    // Ove metode možete dodati ako vam trebaju, ili koristite postojeće
     public void disableButtons() {
         onButton.setEnabled(false);
         offButton.setEnabled(false);
