@@ -69,8 +69,6 @@ void setup() {
   tft.fillScreen(ST77XX_BLACK);
   tft.setTextColor(ST77XX_WHITE);
   tft.setTextSize(2);
-
-  tft.print("Waiting for BT\nconnection...");
   
   SerialBT.begin("ESP32"); // ESP32 in slave mode, allows phone connections
   Serial.println("Bluetooth started, waiting for client/config...");
@@ -225,37 +223,47 @@ bool check_screen_state(){
     static int previous_curr_temp = 0;
     static long lastChecked = 0;
 
-    if(previous_power != ir_state.power)
-    {
-      previous_power = ir_state.power;
-      return true;
-    }
+    if(bt_configured){
+      if(previous_power != ir_state.power)
+      {
+        previous_power = ir_state.power;
+        return true;
+      }
 
-    if(previous_temp != ir_state.degrees)
-    {
-      previous_temp = ir_state.degrees;
-      return true;
-    }
+      if(previous_temp != ir_state.degrees)
+      {
+        previous_temp = ir_state.degrees;
+        return true;
+      }
 
-    if(previous_mode != ir_state.mode)
-    {
-      previous_mode = ir_state.mode;
-      return true;
-    }
+      if(previous_mode != ir_state.mode)
+      {
+        previous_mode = ir_state.mode;
+        return true;
+      }
 
-    if(previous_fanspeed != ir_state.fanspeed)
-    {
-      previous_fanspeed = ir_state.fanspeed;
-      return true;
-    }
-    
-    if(millis() - lastChecked > 5000)
-    {
-      lastChecked = millis();
-      return true;
-    }
+      if(previous_fanspeed != ir_state.fanspeed)
+      {
+        previous_fanspeed = ir_state.fanspeed;
+        return true;
+      }
+      
+      if(millis() - lastChecked > 5000)
+      {
+        lastChecked = millis();
+        return true;
+      }
 
-    return false;
+      return false;
+    }
+    else{
+      if(millis() - lastChecked > 250)
+      {
+        lastChecked = millis();
+        return true;
+      }
+      return false;
+    }
 }
 
 String modeToString(stdAc::opmode_t mode){
@@ -316,40 +324,67 @@ float readCurrentTemp() {
 
 void refresh_screen(){
   // clear screen
-tft.fillScreen(ST77XX_BLACK);
+  if(bt_configured){
+    tft.fillScreen(ST77XX_BLACK);
 
-// --- MODE (Top-left) ---
-tft.setCursor(10, 10);
-tft.print("MODE");
-tft.setCursor(10, 50);
-tft.print(modeToString(ir_state.mode));
+    // --- MODE (Top-left) ---
+    tft.setCursor(10, 10);
+    tft.print("MODE");
+    tft.setCursor(10, 50);
+    tft.print(modeToString(ir_state.mode));
 
-// --- FAN (Top-right) ---
-tft.setCursor(240 - 60, 10);  // about 160 px from left
-tft.print("FAN");
-tft.setCursor(240 - 60, 50);
-tft.print(fanToString(ir_state.fanspeed));
+    // --- FAN (Top-right) ---
+    tft.setCursor(240 - 60, 10);  // about 160 px from left
+    tft.print("FAN");
+    tft.setCursor(240 - 60, 50);
+    tft.print(fanToString(ir_state.fanspeed));
 
-// --- TGT (Center) ---
-tft.setCursor(100, 10);
-tft.print("TGT");
-tft.setCursor(105, 30);
-tft.print((int)ir_state.degrees);
+    // --- TGT (Center) ---
+    tft.setCursor(100, 10);
+    tft.print("TGT");
+    tft.setCursor(105, 30);
+    tft.print((int)ir_state.degrees);
 
-// --- CURR (Bottom-center) ---
-tft.setCursor(95, 105);
-tft.print("CURR");
-tft.setCursor(105, 120);
-tft.print(readCurrentTemp());
+    // --- CURR (Bottom-center) ---
+    tft.setCursor(95, 105);
+    tft.print("CURR");
+    tft.setCursor(105, 120);
+    tft.print(readCurrentTemp());
 
-if(ir_state.power){
-  tft.setCursor(10, 105);
-  tft.print("ON");
-}else{
-  tft.setCursor(10, 105);
-  tft.print("OFF");
-}
+    if(ir_state.power){
+      tft.setCursor(10, 105);
+      tft.print("ON");
+    }else{
+      tft.setCursor(10, 105);
+      tft.print("OFF");
+    }
+  }
+  else{
+    // Draw a static waiting message and animate a spinner at a fixed position.
+    static bool firstWrite = true;
+    static const char spinner[4] = {'/', '-', '\\', '|'};
+    static uint8_t idx = 0;
+    // Coordinates for message and spinner
+    const int msgX = 0;
+    const int msgY = 0;
+    const int spinnerX = msgX + 136; // place spinner to the right of the message
+    const int spinnerY = msgY + 16;
 
+    if (firstWrite) {
+      tft.fillScreen(ST77XX_BLACK); // ensure clean slate on first write
+      tft.setCursor(msgX, msgY);
+      tft.print("Waiting for BT\nconnection ");
+      firstWrite = false;
+    }
+
+    // Clear previous spinner char (draw a black rectangle over it)
+    tft.fillRect(spinnerX - 2, spinnerY - 2, 12, 16, ST77XX_BLACK);
+    // Draw spinner in white at fixed location
+    tft.setCursor(spinnerX, spinnerY);
+    tft.print(spinner[idx]);
+    idx = (idx + 1) % 4;
+
+  }
 }
 
 void processCommand(String command) {
