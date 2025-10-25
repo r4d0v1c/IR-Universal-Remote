@@ -5,6 +5,7 @@
 #include <SPI.h>
 #include <Adafruit_ST7789.h>
 #include <Adafruit_GFX.h>
+#include "BluetoothSerial.h"
 
 // pin numbers (note - different from schematic)
 #define DPAD_LEFT 33
@@ -21,7 +22,7 @@
 #define TFT_RST   4
 #define TFT_BLK   32  // backlight pin
 
-#define DEBOUNCE_MS 50
+#define DEBOUNCE_MS 100
 
 IRac ac(IR_LED);
 // state object to hold current AC settings
@@ -31,11 +32,15 @@ stdAc::state_t ir_state{};
 unsigned long lastPressTime = 0;
 
 bool screen_refresh = 1;
+// Bluetooth configuration gate - remote inputs disabled until configured
+bool bt_configured = false;
 
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
-
+BluetoothSerial SerialBT;
+String inputBuffer = "";
+void processCommand(String);
 
 uint8_t set_temperature = 24;
 bool power_state = false;	// track on/off state
@@ -54,23 +59,26 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Universal AC Remote Started");
 
-  // 	IMPORTANT
-  // this is where the BLE make/model recieving will happen
-
-  ir_state.protocol = decode_type_t::COOLIX;
-  // TODO investigate
-  ir_state.model = 1; // often just 1, but some protocols need a model number
-
   pinMode(TFT_BLK, OUTPUT);
   digitalWrite(TFT_BLK, HIGH); // turn on backlight
 
-  // Initialize SPI TFT (135x240 typical for 1.14" screen)
+  // initialize SPI TFT (135x240 for 1.14" screen)
   tft.init(135, 240); 
   tft.setRotation(1);  // adjust if screen orientation is wrong
 
   tft.fillScreen(ST77XX_BLACK);
   tft.setTextColor(ST77XX_WHITE);
   tft.setTextSize(2);
+
+  tft.print("Waiting for BT\nconnection...");
+  
+  SerialBT.begin("ESP32"); // ESP32 in slave mode, allows phone connections
+  Serial.println("Bluetooth started, waiting for client/config...");
+  // Do not block here. We'll accept a client and configuration in the loop.
+
+  // TODO investigate
+  ir_state.model = 1; // often just 1, but some protocols need a model number
+
 
 
   // initialize the state with sensible defaults
@@ -81,6 +89,8 @@ void setup() {
   ir_state.fanspeed = stdAc::fanspeed_t::kMax;
   ir_state.swingv = stdAc::swingv_t::kOff;
   ir_state.swingh = stdAc::swingh_t::kOff;
+  
+  tft.fillScreen(ST77XX_BLACK);
 }
 
 
@@ -91,6 +101,8 @@ void handle_inputs(){
     // Now check for individual button presses
     if (digitalRead(DPAD_LEFT) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis(); // reset debounce timer
+      button_enable = 0;
+
       Serial.println("MODE pressed");
 
       // Cycle through the main operating modes
@@ -119,6 +131,8 @@ void handle_inputs(){
     } 
     else if (digitalRead(DPAD_UP) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
+      button_enable = 0;
+
       Serial.println("TEMP UP pressed");
       if (ir_state.degrees < 30) { // set a reasonable max temp
         ir_state.degrees++;
@@ -128,6 +142,8 @@ void handle_inputs(){
     } 
     else if (digitalRead(DPAD_DOWN) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
+      button_enable = 0;
+
       Serial.println("TEMP DOWN pressed");
       if (ir_state.degrees > 16) { // set a reasonable min temp
         ir_state.degrees--;
@@ -137,6 +153,8 @@ void handle_inputs(){
     } 
     else if (digitalRead(DPAD_RIGHT) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
+      button_enable = 0;
+
       Serial.println("FAN pressed");
 
       // cycle through common fan speeds
@@ -164,14 +182,16 @@ void handle_inputs(){
     } 
     else if (digitalRead(A_BUTTON) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
+      button_enable = 0;
+
       Serial.println("POWER pressed");
       
       // toggle the power state
       ir_state.power = !ir_state.power;
       power_state = ir_state.power; // sync our variable
       
-      // If we're turning on, ensure a sensible default state is set.
-      // This is helpful if the internal state gets out of sync.
+      // if we're turning on, ensure a sensible default state is set.
+      // this is helpful if the internal state gets out of sync.
       if (ir_state.power) {
         ir_state.mode = stdAc::opmode_t::kCool;
         ir_state.degrees = set_temperature;
@@ -181,6 +201,8 @@ void handle_inputs(){
     } 
     else if (digitalRead(B_BUTTON) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
+      button_enable = 0;
+
       // --TODO-- implement function displaying/choosing/applying logic
       Serial.println("B (FUNCTION) pressed");
     }
@@ -330,12 +352,75 @@ if(ir_state.power){
 
 }
 
+void processCommand(String command) {
+  Serial.println("Primljena komanda: " + command);
 
+  // Proveri da li je prazna komanda
+  if (command.length() == 0) {
+    Serial.println("Greska: Prazna komanda");
+    return;
+  }
+
+  int first = command.indexOf('|');
+  int second = command.indexOf('|', first + 1);
+
+  if (first > 0 && second > first) {
+    String device = command.substring(0, first);
+    String model = command.substring(first + 1, second);
+    String action = command.substring(second + 1);
+
+    Serial.println("=== PARSIRANO ===");
+    Serial.println("Device: " + device);
+    Serial.println("Model: " + model);
+    Serial.println("Action: " + action);
+    Serial.println("=================");
+
+    int modelNumber = model.toInt();
+
+    ir_state.protocol = (decode_type_t)modelNumber;
+
+
+  } else {
+    Serial.println("Greska: Neispravan format komande");
+  }
+}
+
+
+// Read incoming bluetooth bytes non-blocking, process when '#' terminator received
+void handleBluetooth() {
+  // If no client connected, nothing to do
+  if (!SerialBT.hasClient()) return;
+
+  while (SerialBT.available()) {
+    char c = (char)SerialBT.read();
+    if (c == '#') {
+      if (inputBuffer.length() > 0) {
+        processCommand(inputBuffer);
+        Serial.println("Poslato nazad");
+        SerialBT.print("OK#");
+        // Mark config as received so remote controls are enabled
+        bt_configured = true;
+        inputBuffer = "";
+      }
+    } else {
+      inputBuffer += c;
+      // keep buffer reasonably bounded
+      if (inputBuffer.length() > 256) inputBuffer = inputBuffer.substring(inputBuffer.length() - 256);
+    }
+  }
+}
 
 void loop() {
+  // process incoming bluetooth config/commands
+  // This will set bt_configured = true when a valid configuration command arrives
+  // and only then will physical inputs be processed.
+  handleBluetooth();
 
-  handle_inputs();
-  
+  // Only process physical buttons when bluetooth configuration is complete
+  if (bt_configured) {
+    handle_inputs();
+  }
+
   if(check_screen_state())
     refresh_screen();
   
