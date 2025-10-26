@@ -91,11 +91,11 @@ void setup() {
   tft.fillScreen(ST77XX_BLACK);
 }
 
-void power_reaction(){
+void power_reaction(bool input){
   Serial.println("POWER pressed");
   
   // toggle the power state
-  ir_state.power = !ir_state.power;
+  ir_state.power = input;
   power_state = ir_state.power; // sync our variable
   
   // if we're turning on, ensure a sensible default state is set.
@@ -214,7 +214,7 @@ void handle_inputs(){
     else if (digitalRead(A_BUTTON) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
       button_enable = 0;
-      power_reaction();
+      power_reaction(!ir_state.power);
     } 
     else if (digitalRead(B_BUTTON) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
@@ -427,10 +427,24 @@ void processCommand(String command) {
     Serial.println("Action: " + action);
     Serial.println("=================");
 
-    int modelNumber = model.toInt();
+    if(!bt_configured){
+      int modelNumber = model.toInt();
+      ir_state.protocol = (decode_type_t)modelNumber;
+    }
+    // React to simple control commands from the app (action substring)
+    action.trim();
+    action.toUpperCase();
 
-    ir_state.protocol = (decode_type_t)modelNumber;
-
+    if (action == "ON") {
+      // Explicit ON: ensure sensible defaults and send
+      power_reaction(true);
+    } else if (action == "OFF") {
+      power_reaction(false);
+    } else if (action == "TEMP+") {
+      up_reaction();
+    } else if (action == "TEMP-") {
+      down_reaction();
+    }
 
   } else {
     Serial.println("Greska: Neispravan format komande");
