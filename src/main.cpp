@@ -91,6 +91,100 @@ void setup() {
   tft.fillScreen(ST77XX_BLACK);
 }
 
+void power_reaction(){
+  Serial.println("POWER pressed");
+  
+  // toggle the power state
+  ir_state.power = !ir_state.power;
+  power_state = ir_state.power; // sync our variable
+  
+  // if we're turning on, ensure a sensible default state is set.
+  // this is helpful if the internal state gets out of sync.
+  if (ir_state.power) {
+    ir_state.mode = stdAc::opmode_t::kCool;
+    ir_state.degrees = set_temperature;
+    ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+  }
+  ac.sendAc(ir_state);
+}
+
+void function_reaction(){
+  // --TODO-- implement function displaying/choosing/applying logic
+  Serial.println("B (FUNCTION) pressed");
+}
+
+void up_reaction(){
+  Serial.println("TEMP UP pressed");
+  if (ir_state.degrees < 30) { // set a reasonable max temp
+    ir_state.degrees++;
+    set_temperature = ir_state.degrees; // sync our variable
+    ac.sendAc(ir_state);
+  }
+}
+
+void down_reaction(){
+  Serial.println("TEMP DOWN pressed");
+  if (ir_state.degrees > 16) { // set a reasonable min temp
+    ir_state.degrees--;
+    set_temperature = ir_state.degrees; // sync our variable
+    ac.sendAc(ir_state);
+  }
+}
+
+void mode_reaction(){
+  Serial.println("MODE pressed");
+
+  // Cycle through the main operating modes
+  switch (ir_state.mode) {
+  case stdAc::opmode_t::kAuto:
+    ir_state.mode = stdAc::opmode_t::kCool;
+    break;
+  case stdAc::opmode_t::kCool:
+    ir_state.mode = stdAc::opmode_t::kHeat;
+    break;
+  case stdAc::opmode_t::kHeat:
+    ir_state.mode = stdAc::opmode_t::kDry;
+    break;
+  case stdAc::opmode_t::kDry:
+    ir_state.mode = stdAc::opmode_t::kFan;
+    break;
+  case stdAc::opmode_t::kFan:
+    ir_state.mode = stdAc::opmode_t::kAuto;
+    break;
+  default:
+    ir_state.mode = stdAc::opmode_t::kAuto;
+    break;
+  }
+  // Send the updated state
+  ac.sendAc(ir_state);
+}
+
+void fan_reaction(){
+  Serial.println("FAN pressed");
+  // cycle through common fan speeds
+  switch (ir_state.fanspeed) {
+    case stdAc::fanspeed_t::kAuto:
+      ir_state.fanspeed = stdAc::fanspeed_t::kMin;
+      break;
+    case stdAc::fanspeed_t::kMin:
+      ir_state.fanspeed = stdAc::fanspeed_t::kMedium;
+      break;
+    case stdAc::fanspeed_t::kMedium:
+      ir_state.fanspeed = stdAc::fanspeed_t::kHigh;
+      break;
+    case stdAc::fanspeed_t::kHigh:
+      ir_state.fanspeed = stdAc::fanspeed_t::kMax;
+      break;
+    case stdAc::fanspeed_t::kMax:
+      ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+      break;
+    default:
+      ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+      break;
+  }
+  ac.sendAc(ir_state);
+}
+
 
 void handle_inputs(){
   unsigned long now = millis();
@@ -100,109 +194,32 @@ void handle_inputs(){
     if (digitalRead(DPAD_LEFT) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis(); // reset debounce timer
       button_enable = 0;
-
-      Serial.println("MODE pressed");
-
-      // Cycle through the main operating modes
-      switch (ir_state.mode) {
-        case stdAc::opmode_t::kAuto:
-          ir_state.mode = stdAc::opmode_t::kCool;
-          break;
-        case stdAc::opmode_t::kCool:
-          ir_state.mode = stdAc::opmode_t::kHeat;
-          break;
-        case stdAc::opmode_t::kHeat:
-          ir_state.mode = stdAc::opmode_t::kDry;
-          break;
-        case stdAc::opmode_t::kDry:
-          ir_state.mode = stdAc::opmode_t::kFan;
-          break;
-        case stdAc::opmode_t::kFan:
-          ir_state.mode = stdAc::opmode_t::kAuto;
-          break;
-        default:
-          ir_state.mode = stdAc::opmode_t::kAuto;
-          break;
-      }
-      // Send the updated state
-      ac.sendAc(ir_state);
+      mode_reaction();
     } 
     else if (digitalRead(DPAD_UP) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
       button_enable = 0;
-
-      Serial.println("TEMP UP pressed");
-      if (ir_state.degrees < 30) { // set a reasonable max temp
-        ir_state.degrees++;
-        set_temperature = ir_state.degrees; // sync our variable
-        ac.sendAc(ir_state);
-      }
+      up_reaction();
     } 
     else if (digitalRead(DPAD_DOWN) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
       button_enable = 0;
-
-      Serial.println("TEMP DOWN pressed");
-      if (ir_state.degrees > 16) { // set a reasonable min temp
-        ir_state.degrees--;
-        set_temperature = ir_state.degrees; // sync our variable
-        ac.sendAc(ir_state);
-      }
+      down_reaction();
     } 
     else if (digitalRead(DPAD_RIGHT) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
       button_enable = 0;
-
-      Serial.println("FAN pressed");
-
-      // cycle through common fan speeds
-      switch (ir_state.fanspeed) {
-        case stdAc::fanspeed_t::kAuto:
-          ir_state.fanspeed = stdAc::fanspeed_t::kMin;
-          break;
-        case stdAc::fanspeed_t::kMin:
-          ir_state.fanspeed = stdAc::fanspeed_t::kMedium;
-          break;
-        case stdAc::fanspeed_t::kMedium:
-          ir_state.fanspeed = stdAc::fanspeed_t::kHigh;
-          break;
-        case stdAc::fanspeed_t::kHigh:
-          ir_state.fanspeed = stdAc::fanspeed_t::kMax;
-          break;
-        case stdAc::fanspeed_t::kMax:
-          ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
-          break;
-        default:
-          ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
-          break;
-      }
-      ac.sendAc(ir_state);
+      fan_reaction();
     } 
     else if (digitalRead(A_BUTTON) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
       button_enable = 0;
-
-      Serial.println("POWER pressed");
-      
-      // toggle the power state
-      ir_state.power = !ir_state.power;
-      power_state = ir_state.power; // sync our variable
-      
-      // if we're turning on, ensure a sensible default state is set.
-      // this is helpful if the internal state gets out of sync.
-      if (ir_state.power) {
-        ir_state.mode = stdAc::opmode_t::kCool;
-        ir_state.degrees = set_temperature;
-        ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
-      }
-      ac.sendAc(ir_state);
+      power_reaction();
     } 
     else if (digitalRead(B_BUTTON) == LOW && now - lastPressTime > DEBOUNCE_MS) {
       lastPressTime = millis();
       button_enable = 0;
-
-      // --TODO-- implement function displaying/choosing/applying logic
-      Serial.println("B (FUNCTION) pressed");
+      function_reaction();
     }
   } else if (digitalRead(DPAD_LEFT) &&
            digitalRead(DPAD_UP) &&
@@ -360,11 +377,11 @@ void refresh_screen(){
     }
   }
   else{
-    // Draw a static waiting message and animate a spinner at a fixed position.
+    // draw a static waiting message and animate a spinner at a fixed position.
     static bool firstWrite = true;
     static const char spinner[4] = {'/', '-', '\\', '|'};
     static uint8_t idx = 0;
-    // Coordinates for message and spinner
+    // coordinates for message and spinner
     const int msgX = 0;
     const int msgY = 0;
     const int spinnerX = msgX + 136; // place spinner to the right of the message
@@ -377,9 +394,9 @@ void refresh_screen(){
       firstWrite = false;
     }
 
-    // Clear previous spinner char (draw a black rectangle over it)
+    // clear previous spinner char (draw a black rectangle over it)
     tft.fillRect(spinnerX - 2, spinnerY - 2, 12, 16, ST77XX_BLACK);
-    // Draw spinner in white at fixed location
+    // draw spinner in white at fixed location
     tft.setCursor(spinnerX, spinnerY);
     tft.print(spinner[idx]);
     idx = (idx + 1) % 4;
