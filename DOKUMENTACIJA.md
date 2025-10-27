@@ -46,7 +46,7 @@
 - **Programski jezik:** Java
 - **Platforma:** Android (API 21+)
 - **Bluetooth protokol:** RFCOMM (Serial Port Profile)
-- **Hardware:** ESP32 mikrocontroler sa IR emiterom
+- **Hardware:** ESP32 mikrokontroler sa IR emiterom i pratećim hardverom
 - **Build sistem:** Gradle
 
 ---
@@ -62,7 +62,7 @@ com.example.universal_ac_tv_remote/
 └── utils/              # Utility klase (Helper)
 ```
 
-### Arhitektonski Dijagram
+### Dijagram
 
 ```
 ┌─────────────────┐
@@ -231,7 +231,7 @@ public void sendData(String data)
 **Parametri:**
 - `data` - String koji se šalje ESP32 uređaju (komanda, podatak, itd.)
 
-**Opis:** Šalje tekstualne podatke preko aktivne Bluetooth konekcije. Podatci se konvertuju u bajtove i šalju preko izlaznog toka.
+**Opis:** Šalje tekstualne podatke preko aktivne Bluetooth konekcije. Podaci se konvertuju u bajtove i šalju preko izlaznog toka.
 
 **Logging:**
 - ✅ Uspeh: `📤 Podaci poslati: [data]`
