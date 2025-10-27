@@ -41,8 +41,7 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     private String selectedDeviceType = ""; // "TV" ili "AC"
     private int selectedDeviceName;
     private int selectedAcDeviceValue = 0;
-
-    String[] tvBrands = {"SAMSUNG", "LG", "FOX"};
+    private int selectedTvDeviceValue = 0;
 
     @Override
     public void onBackPressed() {
@@ -116,12 +115,24 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void showTvSelectionDialog() {
+        String[] tvDeviceNames = Arrays.stream(Constants.DecodeTypeTV.values())
+                .filter(type -> type != Constants.DecodeTypeTV.UNKNOWN)
+                .map(Enum::name)
+                .toArray(String[]::new);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(ControlActivity.this);
-        builder.setTitle("Choose available TV brand")
-                .setItems(tvBrands, (dialog, which) -> {
-                    String chosen = tvBrands[which];
-                   // selectedDeviceName = chosen;
+        builder.setTitle("Choose available TV device")
+                .setItems(tvDeviceNames, (dialog, which) -> {
+                    String chosen = tvDeviceNames[which];
+                    Constants.DecodeTypeTV selectedType = Constants.DecodeTypeTV.valueOf(chosen);
+
+                    selectedDeviceName = selectedType.getValue();
                     deviceText.setText("TV: " + chosen);
+
+                    // Slanje informacije o izabranom TV uredjaju
+                    String data = "#" + selectedDeviceType + "|" + selectedDeviceName + "|" + null + "#";
+                    sendData(data);
+
                     disableAcButtons();
                     enableTvButtons();
 
@@ -132,8 +143,8 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void showAcSelectionDialog() {
-        String[] acDeviceNames = Arrays.stream(Constants.DecodeType.values())
-                .filter(type -> type != Constants.DecodeType.UNKNOWN && type != Constants.DecodeType.UNUSED)
+        String[] acDeviceNames = Arrays.stream(Constants.DecodeTypeAC.values())
+                .filter(type -> type != Constants.DecodeTypeAC.UNKNOWN)
                 .map(Enum::name)
                 .toArray(String[]::new);
 
@@ -141,11 +152,15 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         builder.setTitle("Choose available AC device")
                 .setItems(acDeviceNames, (dialog, which) -> {
                     String chosen = acDeviceNames[which];
-                    Constants.DecodeType selectedType = Constants.DecodeType.valueOf(chosen);
+                    Constants.DecodeTypeAC selectedType = Constants.DecodeTypeAC.valueOf(chosen);
 
                     selectedDeviceName = selectedType.getValue();
-                    selectedAcDeviceValue = selectedType.getValue();
-                    deviceText.setText("AC: " + chosen + " (" + selectedAcDeviceValue + ")");
+                    deviceText.setText("AC: " + chosen);
+
+                    // Slanje informacije o izabranom AC uredjaju
+                    String data = "#" + selectedDeviceType + "|" + selectedDeviceName + "|" + null + "#";
+                    sendData(data);
+
                     disableTvButtons();
                     enableAcButtons();
 
@@ -157,7 +172,7 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
 
     private void sendCommand(String command) {
         if (selectedDeviceType.isEmpty()) {
-            deviceText.setText("Prvo izaberite uređaj");
+            deviceText.setText(R.string.please_choose_a_device_first);
             return;
         }
 
@@ -165,8 +180,6 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         Log.d("ControlActivity", data);
         sendData(data);
     }
-
-    // Ove metode možete dodati ako vam trebaju, ili koristite postojeće
     public void disableButtons() {
         onButton.setEnabled(false);
         offButton.setEnabled(false);
@@ -186,14 +199,6 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         volPlusButton.setAlpha(0.5f);
         volMinusButton.setAlpha(0.5f);
     }
-
-    public void disableAcButtons() {
-        tempPlusButton.setEnabled(false);
-        tempMinusButton.setEnabled(false);
-        tempPlusButton.setAlpha(0.5f);
-        tempMinusButton.setAlpha(0.5f);
-    }
-
     public void enableAcButtons() {
         tempPlusButton.setEnabled(true);
         tempMinusButton.setEnabled(true);
@@ -204,7 +209,6 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         onButton.setAlpha(1f);
         offButton.setAlpha(1f);
     }
-
     public void disableTvButtons() {
         chMinusButton.setEnabled(false);
         chPlusButton.setEnabled(false);
@@ -215,23 +219,26 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         volPlusButton.setAlpha(0.5f);
         volMinusButton.setAlpha(0.5f);
     }
-
     public void enableTvButtons() {
         chMinusButton.setEnabled(true);
         chPlusButton.setEnabled(true);
         volPlusButton.setEnabled(true);
         volMinusButton.setEnabled(true);
-        onButton.setEnabled(true);
-        offButton.setEnabled(true);
         chMinusButton.setAlpha(1f);
         chPlusButton.setAlpha(1f);
         volPlusButton.setAlpha(1f);
         volMinusButton.setAlpha(1f);
-        onButton.setAlpha(1f);
-        offButton.setAlpha(1f);
     }
-
-    // DODATA METODA ZA SLANJE PODATAKA
+    public void disableAcButtons() {
+        tempPlusButton.setEnabled(false);
+        tempMinusButton.setEnabled(false);
+        onButton.setEnabled(true);
+        offButton.setEnabled(true);
+        tempPlusButton.setAlpha(0.5f);
+        tempMinusButton.setAlpha(0.5f);
+        onButton.setAlpha(0.5f);
+        offButton.setAlpha(0.5f);
+    }
     public void sendData(String data) {
         if (bluetoothControl != null) {
             bluetoothControl.sendData(data);

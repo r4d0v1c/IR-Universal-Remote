@@ -22,4 +22,5 @@
     <string name="_minus">VOL-</string>
     <string name="ac">AC</string>
     <string name="tv">TV</string>
+    <string name="please_choose_a_device_first">Please choose a device first!</string>
 </resources>
