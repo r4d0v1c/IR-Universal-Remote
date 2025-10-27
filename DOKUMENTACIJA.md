@@ -19,8 +19,7 @@
 5. [Tok Aplikacije](#-tok-aplikacije)
 6. [Bluetooth Komunikacija](#-bluetooth-komunikacija)
 7. [Android Dozvole](#-android-dozvole)
-8. [Konfiguracija ESP32](#-konfiguracija-esp32)
-
+8. 
 ---
 
 ## 🎯 Pregled Projekta
@@ -1592,69 +1591,6 @@ public void onRequestPermissionsResult(int requestCode, String[] permissions, in
     </application>
 </manifest>
 ```
-
----
-
-## ⚙️ Konfiguracija ESP32
-
-### ESP32 Bluetooth Server (Arduino Kod)
-
-```cpp
-#include <BluetoothSerial.h>
-
-BluetoothSerial SerialBT;
-
-void setup() {
-  Serial.begin(115200);
-  SerialBT.begin("ESP32_Remote"); // Ime Bluetooth uređaja
-  Serial.println("ESP32 Bluetooth je spreman za uparivanje!");
-  Serial.print("MAC Adresa: ");
-  Serial.println(ESP32.getEfuseMac(), HEX); // Prikaži MAC adresu
-}
-
-void loop() {
-  if (SerialBT.available()) {
-    String command = SerialBT.readString();
-    Serial.println("Primljena komanda: " + command);
-    
-    // Parsiranje komandi
-    if (command == "AC_POWER_ON") {
-      // Emituj IR signal za AC Power On
-    }
-    else if (command == "AC_TEMP_UP") {
-      // Emituj IR signal za AC Temp+
-    }
-    // ... ostale komande
-  }
-}
-```
-
-### Uparivanje ESP32 sa Android Telefonom
-
-1. **Uključi ESP32** i otpočni Bluetooth server
-2. **Otvori Bluetooth Settings** na Android telefonu
-3. **Skeniraj uređaje** → "ESP32_Remote" treba da bude vidljiv
-4. **Klikni na "ESP32_Remote"** → Upari uređaje
-5. **PIN kod** (ako se traži): obično `1234` ili `0000`
-6. **Proveri MAC adresu** u Serial Monitor-u ESP32
-7. **Kopiraj MAC adresu** u `Constants.ESP32_MAC_ADDRESS`
-
-### IR LED Emiter (Planirana Implementacija)
-
-```cpp
-#include <IRremoteESP8266.h>
-#include <IRsend.h>
-
-const uint16_t IR_LED_PIN = 4; // GPIO pin za IR LED
-IRsend irsend(IR_LED_PIN);
-
-void sendACPowerOn() {
-  // Emituj IR signal za AC Power On (primer za Samsung AC)
-  uint16_t rawData[67] = {4500,4500, 550,1650, 550,1650, ...};
-  irsend.sendRaw(rawData, 67, 38); // 38kHz frekvencija
-}
-```
-
 ---
 
 ## 📊 Dijagram Klasa (UML)
