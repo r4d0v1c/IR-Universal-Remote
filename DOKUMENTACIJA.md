@@ -19,7 +19,6 @@
 5. [Tok Aplikacije](#-tok-aplikacije)
 6. [Bluetooth Komunikacija](#-bluetooth-komunikacija)
 7. [Android Dozvole](#-android-dozvole)
-8. 
 ---
 
 ## 🎯 Pregled Projekta
