@@ -25,8 +25,12 @@
 #define DEBOUNCE_MS 100
 
 IRac ac(IR_LED);
+IRsend tv(IR_LED);
+
 // state object to hold current AC settings
 stdAc::state_t ir_state{};
+
+bool deviceIsAC;
 
 // debouncing
 unsigned long lastPressTime = 0;
@@ -77,7 +81,7 @@ void setup() {
   // TODO investigate
   ir_state.model = 1; // often just 1, but some protocols need a model number
 
-
+  tv.begin();
 
   // initialize the state with sensible defaults
   ir_state.power = false;    // Start off
@@ -93,19 +97,34 @@ void setup() {
 
 void power_reaction(bool input){
   Serial.println("POWER pressed");
-  
-  // toggle the power state
-  ir_state.power = input;
-  power_state = ir_state.power; // sync our variable
-  
-  // if we're turning on, ensure a sensible default state is set.
-  // this is helpful if the internal state gets out of sync.
-  if (ir_state.power) {
-    ir_state.mode = stdAc::opmode_t::kCool;
-    ir_state.degrees = set_temperature;
-    ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+  if(deviceIsAC)
+  {
+    // toggle the power state
+    ir_state.power = input;
+    power_state = ir_state.power; // sync our variable
+    
+    // if we're turning on, ensure a sensible default state is set.
+    // this is helpful if the internal state gets out of sync.
+    if (ir_state.power) {
+      ir_state.mode = stdAc::opmode_t::kCool;
+      ir_state.degrees = set_temperature;
+      ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+    }
+    ac.sendAc(ir_state);
   }
-  ac.sendAc(ir_state);
+  else{
+    // toggle the power state
+    ir_state.power = input;
+    power_state = ir_state.power; // sync our variable
+
+    Serial.println("TV POWER PRESSED");
+
+    tv.sendNEC(0x20DF10EF, 32); 
+    // currently works only for LG tvs
+    // 32 bits per message by default
+    // 1 repetition
+
+  }
 }
 
 void function_reaction(){
@@ -114,75 +133,110 @@ void function_reaction(){
 }
 
 void up_reaction(){
-  Serial.println("TEMP UP pressed");
-  if (ir_state.degrees < 30) { // set a reasonable max temp
-    ir_state.degrees++;
-    set_temperature = ir_state.degrees; // sync our variable
-    ac.sendAc(ir_state);
+  if(deviceIsAC){
+    Serial.println("TEMP UP pressed");
+    if (ir_state.degrees < 30) { // set a reasonable max temp
+      ir_state.degrees++;
+      set_temperature = ir_state.degrees; // sync our variable
+      ac.sendAc(ir_state);
+    }
+  }
+  else
+  {
+    tv.sendNEC(0x20DF00FF, 32); 
+    // currently works only for LG tvs
+    // 32 bits per message by default
+    // 1 repetition
   }
 }
 
 void down_reaction(){
-  Serial.println("TEMP DOWN pressed");
-  if (ir_state.degrees > 16) { // set a reasonable min temp
-    ir_state.degrees--;
-    set_temperature = ir_state.degrees; // sync our variable
-    ac.sendAc(ir_state);
+  if(deviceIsAC){
+    Serial.println("TEMP DOWN pressed");
+    if (ir_state.degrees > 16) { // set a reasonable min temp
+      ir_state.degrees--;
+      set_temperature = ir_state.degrees; // sync our variable
+      ac.sendAc(ir_state);
+    }
+  }
+  else
+  {
+    tv.sendNEC(0x20DF807F, 32); 
+    // currently works only for LG tvs
+    // 32 bits per message by default
+    // 1 repetition
   }
 }
 
 void mode_reaction(){
   Serial.println("MODE pressed");
-
-  // Cycle through the main operating modes
-  switch (ir_state.mode) {
-  case stdAc::opmode_t::kAuto:
-    ir_state.mode = stdAc::opmode_t::kCool;
-    break;
-  case stdAc::opmode_t::kCool:
-    ir_state.mode = stdAc::opmode_t::kHeat;
-    break;
-  case stdAc::opmode_t::kHeat:
-    ir_state.mode = stdAc::opmode_t::kDry;
-    break;
-  case stdAc::opmode_t::kDry:
-    ir_state.mode = stdAc::opmode_t::kFan;
-    break;
-  case stdAc::opmode_t::kFan:
-    ir_state.mode = stdAc::opmode_t::kAuto;
-    break;
-  default:
-    ir_state.mode = stdAc::opmode_t::kAuto;
-    break;
+  if(deviceIsAC){
+    // Cycle through the main operating modes
+    switch (ir_state.mode) {
+    case stdAc::opmode_t::kAuto:
+      ir_state.mode = stdAc::opmode_t::kCool;
+      break;
+    case stdAc::opmode_t::kCool:
+      ir_state.mode = stdAc::opmode_t::kHeat;
+      break;
+    case stdAc::opmode_t::kHeat:
+      ir_state.mode = stdAc::opmode_t::kDry;
+      break;
+    case stdAc::opmode_t::kDry:
+      ir_state.mode = stdAc::opmode_t::kFan;
+      break;
+    case stdAc::opmode_t::kFan:
+      ir_state.mode = stdAc::opmode_t::kAuto;
+      break;
+    default:
+      ir_state.mode = stdAc::opmode_t::kAuto;
+      break;
+    }
+    // Send the updated state
+    ac.sendAc(ir_state);
   }
-  // Send the updated state
-  ac.sendAc(ir_state);
+  else
+  {
+    tv.sendNEC(0x20DF40BF, 32); 
+    // currently works only for LG tvs
+    // 32 bits per message by default
+    // 1 repetition
+  }
 }
 
 void fan_reaction(){
-  Serial.println("FAN pressed");
-  // cycle through common fan speeds
-  switch (ir_state.fanspeed) {
-    case stdAc::fanspeed_t::kAuto:
-      ir_state.fanspeed = stdAc::fanspeed_t::kMin;
-      break;
-    case stdAc::fanspeed_t::kMin:
-      ir_state.fanspeed = stdAc::fanspeed_t::kMedium;
-      break;
-    case stdAc::fanspeed_t::kMedium:
-      ir_state.fanspeed = stdAc::fanspeed_t::kHigh;
-      break;
-    case stdAc::fanspeed_t::kHigh:
-      ir_state.fanspeed = stdAc::fanspeed_t::kMax;
-      break;
-    case stdAc::fanspeed_t::kMax:
-      ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
-      break;
-    default:
-      ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
-      break;
+  if(deviceIsAC){
+    Serial.println("FAN pressed");
+    // cycle through common fan speeds
+    switch (ir_state.fanspeed) {
+      case stdAc::fanspeed_t::kAuto:
+        ir_state.fanspeed = stdAc::fanspeed_t::kMin;
+        break;
+      case stdAc::fanspeed_t::kMin:
+        ir_state.fanspeed = stdAc::fanspeed_t::kMedium;
+        break;
+      case stdAc::fanspeed_t::kMedium:
+        ir_state.fanspeed = stdAc::fanspeed_t::kHigh;
+        break;
+      case stdAc::fanspeed_t::kHigh:
+        ir_state.fanspeed = stdAc::fanspeed_t::kMax;
+        break;
+      case stdAc::fanspeed_t::kMax:
+        ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+        break;
+      default:
+        ir_state.fanspeed = stdAc::fanspeed_t::kAuto;
+        break;
+    }
+    ac.sendAc(ir_state);
   }
-  ac.sendAc(ir_state);
+  else
+  {
+    tv.sendNEC(0x20DFC03F, 32); 
+    // currently works only for LG tvs
+    // 32 bits per message by default
+    // 1 repetition
+  }
 }
 
 
@@ -342,38 +396,46 @@ float readCurrentTemp() {
 void refresh_screen(){
   // clear screen
   if(bt_configured){
-    tft.fillScreen(ST77XX_BLACK);
+    if(deviceIsAC){
+      tft.fillScreen(ST77XX_BLACK);
 
-    // --- MODE (Top-left) ---
-    tft.setCursor(10, 10);
-    tft.print("MODE");
-    tft.setCursor(10, 50);
-    tft.print(modeToString(ir_state.mode));
+      // --- MODE (Top-left) ---
+      tft.setCursor(10, 10);
+      tft.print("MODE");
+      tft.setCursor(10, 50);
+      tft.print(modeToString(ir_state.mode));
 
-    // --- FAN (Top-right) ---
-    tft.setCursor(240 - 60, 10);  // about 160 px from left
-    tft.print("FAN");
-    tft.setCursor(240 - 60, 50);
-    tft.print(fanToString(ir_state.fanspeed));
+      // --- FAN (Top-right) ---
+      tft.setCursor(240 - 60, 10);  // about 160 px from left
+      tft.print("FAN");
+      tft.setCursor(240 - 60, 50);
+      tft.print(fanToString(ir_state.fanspeed));
 
-    // --- TGT (Center) ---
-    tft.setCursor(100, 10);
-    tft.print("TGT");
-    tft.setCursor(105, 30);
-    tft.print((int)ir_state.degrees);
+      // --- TGT (Center) ---
+      tft.setCursor(100, 10);
+      tft.print("TGT");
+      tft.setCursor(105, 30);
+      tft.print((int)ir_state.degrees);
 
-    // --- CURR (Bottom-center) ---
-    tft.setCursor(95, 105);
-    tft.print("CURR");
-    tft.setCursor(105, 120);
-    tft.print(readCurrentTemp());
+      // --- CURR (Bottom-center) ---
+      tft.setCursor(95, 105);
+      tft.print("CURR");
+      tft.setCursor(105, 120);
+      tft.print(readCurrentTemp());
 
-    if(ir_state.power){
-      tft.setCursor(10, 105);
-      tft.print("ON");
-    }else{
-      tft.setCursor(10, 105);
-      tft.print("OFF");
+      if(ir_state.power){
+        tft.setCursor(10, 105);
+        tft.print("ON");
+      }else{
+        tft.setCursor(10, 105);
+        tft.print("OFF");
+      }
+    }
+    else
+    {
+      tft.fillScreen(ST77XX_BLACK);
+      tft.setCursor(0,0);
+      tft.print("DEVICE IS IN TV MODE");
     }
   }
   else{
@@ -430,13 +492,17 @@ void processCommand(String command) {
     if(!bt_configured){
       int modelNumber = model.toInt();
       ir_state.protocol = (decode_type_t)modelNumber;
+      if(device == "TV")
+        deviceIsAC = false;
+      else
+        deviceIsAC = true;
     }
-    // React to simple control commands from the app (action substring)
+    // react to simple control commands from the app (action substring)
     action.trim();
     action.toUpperCase();
 
     if (action == "ON") {
-      // Explicit ON: ensure sensible defaults and send
+      // explicit ON: ensure sensible defaults and send
       power_reaction(true);
     } else if (action == "OFF") {
       power_reaction(false);
@@ -445,6 +511,19 @@ void processCommand(String command) {
     } else if (action == "TEMP-") {
       down_reaction();
     }
+    else if(action == "CH+"){
+      up_reaction();
+    }
+    else if(action == "CH-"){
+      down_reaction();
+    }
+    else if(action == "VOL+"){
+      mode_reaction();
+    }
+    else if(action == "VOL-"){
+      fan_reaction();
+    }
+
 
   } else {
     Serial.println("Greska: Neispravan format komande");
