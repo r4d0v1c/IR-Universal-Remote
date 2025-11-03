@@ -124,11 +124,8 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 
 - Alat za izradu:
 
-  - Projekat razvijati korišćenjem MIT App Inventor za brzu izradu prototipa.
-
-  - Alternativno, može se koristiti Android Studio za profesionalniji GUI i dodatne funkcionalnosti.
+  - Android Studio za profesionalniji GUI i dodatne funkcionalnosti.
  
-
 ---
 
 ### 6. Komunikacioni protokol
@@ -138,17 +135,16 @@ Mobilna aplikacija služi za korisnički interfejs i upravljanje uređajima. Nje
 
 #### Format komande (App -> ESP32)
 ```
-#<DEVICE>|<BRAND>|<MODEL>|<COMMAND>#
+#<DEVICE>|<BRAND>|<COMMAND>#
 ```
 Polja:
 - DEVICE  - tip uređaja [TV, AC]
 - BRAND   - proizvođač (SAMSUNG, LG,...)
-- MODEL   - opciono, ako ima više modela (M1234 ili GENERIC ako nije potrebno)
 - COMMAND - akcija [ON, OFF, VOL+, VOL-, CH+, CH-, TEMP-, TEMP+]
 
 Primeri:
-- #TV|SAMSUNG|GENERIC|VOL+#
-- #AC|DAIKIN|M300|TEMP-#
+- #TV|SAMSUNG|VOL+#
+- #AC|DAIKIN|TEMP-#
 
 #### Format komande (ESP32 -> App)
 ```
