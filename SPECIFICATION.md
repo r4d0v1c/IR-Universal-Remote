@@ -188,6 +188,7 @@ Pošto baza ne mora biti ogromna, najlakše je da bude ugrađena u firmware ESP3
 #### Pristup bazi
 
 - Kada ESP32 primi poruku od aplikacije on:
+  
   1. Parsira poruku - izdvoji uređaj, proizvođača i komandu
   2. Pogleda da li postoji u bazi
   3. Ako postoji - šalje IR kod
